@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from transformers import BertTokenizer, BertForSequenceClassification, AdamW
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AdamW
 from sklearn.model_selection import train_test_split
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.metrics import accuracy_score, classification_report
@@ -23,7 +23,7 @@ le = LabelEncoder()
 df_all['分类结果'] = le.fit_transform(df_all['分类结果'])
 
 # ------------------ 文本编码 ------------------
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+tokenizer = AutoTokenizer.from_pretrained('hfl/chinese-roberta-wwm-ext')
 encoded_all = tokenizer.batch_encode_plus(
     df_all['地址'].tolist(),
     padding=True,
@@ -50,7 +50,7 @@ train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 val_dataloader = DataLoader(val_dataset, batch_size=16)
 
 # ------------------ 模型定义 ------------------
-model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(le.classes_))
+model = AutoModelForSequenceClassification.from_pretrained('hfl/chinese-roberta-wwm-ext', num_labels=len(le.classes_))
 optimizer = AdamW(model.parameters(), lr=1e-5)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -125,4 +125,5 @@ for epoch in range(epochs):
         break
 
 # ------------------ 保存最终模型 ------------------
-model.save_pretrained('fine_tuned_bert_model2')
+model.save_pretrained('fine_tuned_address_model')
+print("模型训练完成，最终模型已保存为 'fine_tuned_address_model'。")
